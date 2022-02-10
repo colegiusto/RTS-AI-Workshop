@@ -45,7 +45,38 @@ public class Unit : MonoBehaviour
         }
     }
     #endregion instancevars
-
+    public Vector2 dir(Vector2 missilePos, Vector2 missileVelo, Vector2 targetPos, float a)
+    {
+        float threshold = .2f;
+        float di = (targetPos - missilePos).magnitude;
+        Ray2D r = new Ray2D(targetPos, -missileVelo);
+        float t = Mathf.Sqrt(2 * di / a);
+        Vector2 missilePoint, targetPoint;
+        targetPoint = r.GetPoint(t * missileVelo.magnitude);
+        missilePoint = missilePos + (targetPoint - missilePos).normalized * .5f  *a * t * t;
+        int count = 0;
+        while ((missilePoint-targetPoint).magnitude > threshold)
+        {
+            if (count++ > 1000)
+            {
+                break;
+            }
+            float dt = (missilePoint - targetPoint).magnitude / (a * t);
+            if ((missilePoint + (missilePoint - missilePos).normalized * .1f - targetPoint).magnitude < (missilePoint - targetPoint).magnitude)
+            {
+                t += dt;
+            }
+            else
+            {
+                t -= dt;
+            }
+            targetPoint = r.GetPoint(t * missileVelo.magnitude);
+            missilePoint = missilePos + (targetPoint - missilePos).normalized * .5f * a * t * t;
+        }
+        print(targetPoint);
+        print(missilePoint);
+        return (targetPoint - missilePos).normalized;
+    }
     public Unit(float value)
     {
         this.value = value;
@@ -208,3 +239,4 @@ public enum UnitState
     AttackMove,
     Attack
 }
+
